@@ -19,7 +19,7 @@ type File struct {
 
 func (f *File) WithHashId() *File {
 	f.HashId = utils.EncodeId(int(f.ID), utils.FilesResourceType)
-	f.CatalogHashID = utils.EncodeId(f.CatalogID, utils.FilesResourceType)
+	f.CatalogHashID = utils.EncodeId(f.CatalogID, utils.CatalogsResourceType)
 	return f
 }
 
@@ -29,4 +29,3 @@ func (f *File) WithHasPassword() *File {
 	}
 	return f
 }
-
