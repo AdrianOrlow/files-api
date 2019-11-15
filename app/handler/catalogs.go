@@ -10,8 +10,8 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-func GetPublicCatalogs(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
-	catalogs := getPublicCatalogsOr404(db, w, r)
+func GetRootCatalogs(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
+	catalogs := getRootCatalogsOr404(db, w, r)
 	if catalogs == nil {
 		return
 	}
@@ -138,13 +138,57 @@ func GetCatalogCatalogs(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func getPublicCatalogsOr404(db *gorm.DB, w http.ResponseWriter, r *http.Request) []model.Catalog {
+func GetCatalogPath(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
+	var path []model.CatalogPathElement
+
+	vars := mux.Vars(r)
+	hashId := vars["hashId"]
+	zeroId := utils.EncodeId(0, utils.CatalogsResourceType)
+	index := 0
+
+	if hashId == zeroId {
+		respondError(w, http.StatusBadRequest, "RootHasNoPath")
+		return
+	}
+
+	for len(path) == 0 || hashId != zeroId {
+		id, err := utils.DecodeId(hashId, utils.CatalogsResourceType)
+
+		if err != nil {
+			respondError(w, http.StatusNotFound, err.Error())
+			return
+		} else {
+			var catalog *model.Catalog
+
+			catalog = getCatalogOr404(db, uint(id), w, r)
+			if catalog == nil {
+				return
+			}
+
+			catalog = catalog.WithHashId()
+			path = append(path, catalog.ToPath(index))
+			hashId = catalog.ParentHashID
+			index++
+		}
+	}
+
+	// last parent is always root (titled as 'Files')
+	path = append(path, model.CatalogPathElement{
+		Index:    index + 1,
+		HashId:   zeroId,
+		Title:    "Files",
+		IsPublic: true,
+	})
+
+	respondJSON(w, http.StatusOK, path)
+}
+
+func getRootCatalogsOr404(db *gorm.DB, w http.ResponseWriter, r *http.Request) []model.Catalog {
 	var catalogs []model.Catalog
 	if err := db.
-		Where(model.Catalog{IsPublic: true}).
-		Find(&catalogs, model.Catalog{}).
-		Error;
-	err != nil {
+		Where("is_public = 1 AND parent_id = 0").
+		Find(&catalogs, &model.Catalog{}).
+		Error; err != nil {
 		respondError(w, http.StatusNotFound, err.Error())
 		return nil
 	}
@@ -160,8 +204,7 @@ func getCatalogOr404(db *gorm.DB, id uint, w http.ResponseWriter, r *http.Reques
 		First(&catalog, model.Catalog{
 			Model: model.Model{ID: id},
 		}).
-		Error;
-	err != nil {
+		Error; err != nil {
 		respondError(w, http.StatusNotFound, err.Error())
 		return nil
 	}
@@ -173,8 +216,7 @@ func getCatalogChildCatalogsOr404(db *gorm.DB, id int, w http.ResponseWriter, r 
 	if err := db.
 		Where(model.Catalog{ParentID: id}).
 		Find(&catalogs, model.Catalog{}).
-		Error;
-	err != nil {
+		Error; err != nil {
 		respondError(w, http.StatusNotFound, err.Error())
 		return nil
 	}
@@ -189,8 +231,7 @@ func getCatalogChildFilesOr404(db *gorm.DB, id int, w http.ResponseWriter, r *ht
 	if err := db.
 		Where(model.File{CatalogID: id}).
 		Find(&files, model.File{}).
-		Error;
-	err != nil {
+		Error; err != nil {
 		respondError(w, http.StatusNotFound, err.Error())
 		return nil
 	}
