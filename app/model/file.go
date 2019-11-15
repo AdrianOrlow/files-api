@@ -17,9 +17,18 @@ type File struct {
 	CatalogHashID    string `json:"catalog_id" sql:"-"`
 }
 
+type FilePassword struct {
+	Password string `json:"password"`
+}
+
 func (f *File) WithHashId() *File {
 	f.HashId = utils.EncodeId(int(f.ID), utils.FilesResourceType)
 	f.CatalogHashID = utils.EncodeId(f.CatalogID, utils.CatalogsResourceType)
+	return f
+}
+
+func (f *File) WithId() *File {
+	f.CatalogID, _ = utils.DecodeId(f.CatalogHashID, utils.CatalogsResourceType)
 	return f
 }
 
