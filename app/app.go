@@ -42,9 +42,7 @@ func (a *App) Initialize(config *config.Config) {
 
 	handler.InitializeAuth(config)
 
-	r := mux.NewRouter()
-	v1 := r.PathPrefix("/v1").Subrouter()
-	a.Router = v1
+	a.Router = mux.NewRouter()
 	a.setRouters()
 }
 
@@ -52,22 +50,12 @@ type RequestHandlerFunction func(db *gorm.DB, w http.ResponseWriter, r *http.Req
 
 // Run the app on it's router
 func (a *App) Run(host string) {
+	log.Print("Listening on " + host)
 	log.Fatal(http.ListenAndServe(host, a.Router))
 }
 
 func (a *App) handleRequest(h RequestHandlerFunction) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		h(a.DB, w, r)
-	}
-}
-
-func (a *App) adminOnly(h RequestHandlerFunction) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		authToken := r.Header.Get("Authorization")
-		status, err := utils.VerifyJWT(authToken)
-		if err != nil {
-			w.WriteHeader(status)
-		}
 		h(a.DB, w, r)
 	}
 }
