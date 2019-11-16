@@ -19,5 +19,6 @@
   "admins_gmail_addresses": [
     "admin@example.com"
   ],
+  "files_dir": "files",
   "secret_jwt": "XbnLQgYjSY9ZDkfvXfv9whW3ZnA6FbeseAjrpxFW9upngFYGUt95T9FKcHryfj6vFeDySGQhw5TnFWkbYNfYbuybf78zK8kfxtaV7ZTmVAsXrAXT2XMm7SxKuWZzGRLYgL5ckjsxVMzAcEcFyveCeuXNEa9XRsw3NN4NtR7VEPrYhd64RgJyHMsbP8PGgNhZpGRbCw4XYMGLuSemBRpv6G6gsvUxaMhFe8nyBMtT3dMCCxdrTkygsVc9gVQ7KwYM"
 }

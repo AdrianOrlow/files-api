@@ -2,21 +2,9 @@ package handler
 
 import (
 	"bytes"
-	"crypto/md5"
-	"crypto/sha1"
-	"encoding/base64"
-	"encoding/hex"
 	"encoding/json"
-	"errors"
 	"golang.org/x/crypto/bcrypt"
-	"io"
-	"io/ioutil"
-	"mime/multipart"
 	"net/http"
-	"os"
-	"path/filepath"
-	"strconv"
-	"strings"
 	"time"
 
 	"github.com/AdrianOrlow/files-api/app/model"
@@ -40,8 +28,9 @@ func GetFile(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 		}
 
 		if file.WithHasPassword().HasPassword {
-			err := checkPasswordFromAuthorizationHeader(file.Password, w, r)
+			err := utils.CompareHashAndPasswordFromAuthHeader([]byte(file.Password), r)
 			if err != nil {
+				respondError(w, http.StatusForbidden, err.Error())
 				return
 			}
 		}
@@ -59,12 +48,12 @@ func CreateFile(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	reqFile, _, err := r.FormFile("file")
+	multipartFile, _, err := r.FormFile("file")
 	if err != nil {
 		respondError(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	defer reqFile.Close()
+	defer multipartFile.Close()
 
 	err = json.Unmarshal([]byte(r.FormValue("data")), &file)
 	if err != nil {
@@ -78,43 +67,43 @@ func CreateFile(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	file.FileName = getFileNameWithTimestamp(file.FileName)
-	err = saveFile(reqFile, file.FileName, w, r)
+	file.FileName = utils.GetFileNameWithTimestamp(file.FileName)
+	err = utils.SaveMultipartFile(multipartFile, file.FileName, w, r)
 	if err != nil {
-		err := db.Delete(&file).Error
-		if err != nil {
+		deleteErr := db.Delete(&file).Error
+		if deleteErr != nil {
 			respondError(w, http.StatusInternalServerError, err.Error())
 			return
 		}
-		respondError(w, http.StatusBadRequest, err.Error())
+		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	savedFile, err := os.Open("./files/" + file.FileName)
+	savedFile, err := utils.ReadFile(file.FileName)
 	if err != nil {
 		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 	defer savedFile.Close()
-	file.FileChecksumSHA1, err = getFileSHA1Hash(savedFile)
+
+	file.FileChecksumSHA1, err = utils.GetFileSHA1Hash(savedFile)
 	if err != nil {
 		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	savedFile, _ = os.Open("./files/" + file.FileName)
-	file.FileChecksumMD5, err = getFileMD5Hash(savedFile)
+	savedFile, _ = utils.ReadFile(file.FileName)
+	file.FileChecksumMD5, err = utils.GetFileMD5Hash(savedFile)
 	if err != nil {
 		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	savedFileStat, err := savedFile.Stat()
+	file.FileSizeKB, err = utils.GetFileSizeInKilobytes(savedFile)
 	if err != nil {
 		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-	file.FileSizeKB = strconv.FormatInt(savedFileStat.Size()/1024, 10)
 
 	var password model.FilePassword
 	err = json.Unmarshal([]byte(r.FormValue("data")), &password)
@@ -155,7 +144,7 @@ func DeleteFile(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		err := os.Remove("./files/" + file.FileName)
+		err := utils.DeleteFile(file.FileName)
 		if err != nil {
 			respondError(w, http.StatusInternalServerError, err.Error())
 			return
@@ -185,13 +174,14 @@ func ServeFile(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 		}
 
 		if file.WithHasPassword().HasPassword {
-			err := checkPasswordFromAuthorizationHeader(file.Password, w, r)
+			err := utils.CompareHashAndPasswordFromAuthHeader([]byte(file.Password), r)
 			if err != nil {
+				respondError(w, http.StatusBadRequest, err.Error())
 				return
 			}
 		}
 
-		data, err := ioutil.ReadFile("files/" + file.FileName)
+		data, err := utils.ReadFileByteStream(file.FileName)
 		if err != nil {
 			respondError(w, http.StatusNotFound, err.Error())
 			return
@@ -211,80 +201,4 @@ func getFileOr404(db *gorm.DB, id uint, w http.ResponseWriter, r *http.Request) 
 		return nil
 	}
 	return file.WithHashId()
-}
-
-func saveFile(file multipart.File, fileName string, w http.ResponseWriter, r *http.Request) error {
-	fileData, err := ioutil.ReadAll(file)
-	if err != nil {
-		respondError(w, http.StatusBadRequest, err.Error())
-		return err
-	}
-
-	err = ioutil.WriteFile("./files/"+fileName, fileData, 0666)
-	if err != nil {
-		respondError(w, http.StatusBadRequest, err.Error())
-		return err
-	}
-
-	return nil
-}
-
-func getFileNameWithTimestamp(fileName string) string {
-	extenstion := filepath.Ext(fileName)
-	name := strings.TrimRight(fileName, extenstion)
-	timestamp := strconv.FormatInt(time.Now().UTC().Unix(), 10)
-	return name + "-" + timestamp + extenstion
-}
-
-func getFileMD5Hash(file io.Reader) (string, error) {
-	md5Hash := md5.New()
-	_, err := io.Copy(md5Hash, file)
-	if err != nil {
-		return "", err
-	}
-	fileMd5HashInBytes := md5Hash.Sum(nil)[:16]
-	return hex.EncodeToString(fileMd5HashInBytes), nil
-}
-
-func getFileSHA1Hash(file io.Reader) (string, error) {
-	sha1Hash := sha1.New()
-	_, err := io.Copy(sha1Hash, file)
-	if err != nil {
-		return "", err
-	}
-	fileSha1HashInBytes := sha1Hash.Sum(nil)[:20]
-	return hex.EncodeToString(fileSha1HashInBytes), nil
-}
-
-func checkPasswordFromAuthorizationHeader(filePassword string, w http.ResponseWriter, r *http.Request) error {
-	password := getPasswordFromAuthorizationHeader(r)
-	if password != nil {
-		err := bcrypt.CompareHashAndPassword([]byte(filePassword), password)
-
-		if err != nil {
-			respondError(w, http.StatusForbidden, "password incorrect")
-			return err
-		}
-	} else {
-		err := errors.New("authorization header not provided")
-		respondError(w, http.StatusBadRequest, err.Error())
-		return err
-	}
-	return nil
-}
-
-func getPasswordFromAuthorizationHeader(r *http.Request) []byte {
-	reqToken := r.Header.Get("Authorization")
-	if reqToken == "" {
-		return nil
-	}
-
-	splitToken := strings.Split(reqToken, "Basic ")
-	if len(splitToken) != 2 {
-		return nil
-	}
-
-	reqToken = splitToken[1]
-	password, _ := base64.StdEncoding.DecodeString(reqToken)
-	return password
 }

@@ -8,6 +8,7 @@ import (
 type Utils struct {
 	hashID *hashids.HashID
 	jwt    JWT
+	files  Files
 }
 
 type JWT struct {
@@ -15,11 +16,20 @@ type JWT struct {
 	adminsEmails []string
 }
 
+type Files struct {
+	dir string
+}
+
 var utils Utils
 
 func Initialize(config *config.Config) error {
 	InitializeJWT(config)
 
-	err := InitializeHashId(config)
+	err := InitializeFiles(config)
+	if err != nil {
+		return err
+	}
+
+	err = InitializeHashId(config)
 	return err
 }

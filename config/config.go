@@ -7,11 +7,12 @@ import (
 )
 
 type Config struct {
-	DB *DBConfig                         `json:"db_config"`
-	HashID *HashID                       `json:"hash_id"`
-	GoogleOauthConfig *GoogleOauthConfig `json:"google_oauth_config"`
-	AdminsGmailAddresses []string        `json:"admins_gmail_addresses"`
-	SecretJWT string                     `json:"secret_jwt"`
+	DB                   *DBConfig          `json:"db_config"`
+	HashID               *HashID            `json:"hash_id"`
+	GoogleOauthConfig    *GoogleOauthConfig `json:"google_oauth_config"`
+	AdminsGMailAddresses []string           `json:"admins_gmail_addresses"`
+	FilesDir             string             `json:"files_dir"`
+	SecretJWT            string             `json:"secret_jwt"`
 }
 
 type DBConfig struct {
@@ -25,12 +26,12 @@ type DBConfig struct {
 }
 
 type HashID struct {
-	Salt string   `json:"salt"`
-	MinLength int `json:"min_length"`
+	Salt      string `json:"salt"`
+	MinLength int    `json:"min_length"`
 }
 
 type GoogleOauthConfig struct {
-	ClientID string     `json:"client_id"`
+	ClientID     string `json:"client_id"`
 	ClientSecret string `json:"client_secret"`
 }
 

@@ -20,7 +20,7 @@ type TokenResponse struct {
 
 func InitializeJWT(config *config.Config) {
 	utils.jwt.secretKey = []byte(config.SecretJWT)
-	utils.jwt.adminsEmails = config.AdminsGmailAddresses
+	utils.jwt.adminsEmails = config.AdminsGMailAddresses
 }
 
 func CreateJWT(email string) (*TokenResponse, error) {
