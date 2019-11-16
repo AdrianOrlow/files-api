@@ -43,8 +43,11 @@ func CreateJWT(email string) (*TokenResponse, error) {
 	return tokenResponse, err
 }
 
-func VerifyJWT(token string) (int, error) {
-	token = strings.Split(token, "Bearer ")[1]
+func VerifyJWT(authHeader string) (int, error) {
+	token, err := getTokenFromAuthHeader(authHeader)
+	if err == jwt.ErrSignatureInvalid {
+		return http.StatusBadRequest, err
+	}
 
 	tkn, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 		return utils.jwt.secretKey, nil
@@ -64,6 +67,14 @@ func VerifyJWT(token string) (int, error) {
 	}
 
 	return http.StatusUnauthorized, err
+}
+
+func getTokenFromAuthHeader(authHeader string) (string, error) {
+	splittedHeader := strings.Split(authHeader, "Bearer ")
+	if len(splittedHeader) != 2 {
+		return "", errors.New("HeaderNotValid")
+	}
+	return splittedHeader[1], nil
 }
 
 func emailValid(email interface{}) bool {

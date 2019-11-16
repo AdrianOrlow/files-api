@@ -277,7 +277,12 @@ func getPasswordFromAuthorizationHeader(r *http.Request) []byte {
 	if reqToken == "" {
 		return nil
 	}
+
 	splitToken := strings.Split(reqToken, "Basic ")
+	if len(splitToken) != 2 {
+		return nil
+	}
+
 	reqToken = splitToken[1]
 	password, _ := base64.StdEncoding.DecodeString(reqToken)
 	return password
