@@ -8,7 +8,7 @@ import (
 
 const (
 	CatalogsResourceType = 0
-	FilesResourceType = 1
+	FilesResourceType    = 1
 )
 
 func InitializeHashId(config *config.Config) error {
@@ -27,9 +27,11 @@ func EncodeId(id int, resourceType int) string {
 
 func DecodeId(hashId string, resourceType int) (int, error) {
 	d, _ := utils.hashID.DecodeWithError(hashId)
-	if d[1] == resourceType {
-		return d[0], nil
+	if len(d) != 2 {
+		return 0, errors.New("not valid hashId")
+	} else if d[1] != resourceType {
+		return 0, errors.New("bad resource type")
 	} else {
-		return 0, errors.New("BadResourceType")
+		return d[0], nil
 	}
 }

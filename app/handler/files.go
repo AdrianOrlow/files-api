@@ -34,12 +34,12 @@ func GetFile(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		respondError(w, http.StatusNotFound, err.Error())
 	} else {
-		file := getFileOr404(db, uint(id), w, r).WithHasPassword()
+		file := getFileOr404(db, uint(id), w, r)
 		if file == nil {
 			return
 		}
 
-		if file.HasPassword {
+		if file.WithHasPassword().HasPassword {
 			err := checkPasswordFromAuthorizationHeader(file.Password, w, r)
 			if err != nil {
 				return
@@ -179,12 +179,12 @@ func ServeFile(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		respondError(w, http.StatusNotFound, err.Error())
 	} else {
-		file := getFileOr404(db, uint(id), w, r).WithHasPassword()
+		file := getFileOr404(db, uint(id), w, r)
 		if file == nil {
 			return
 		}
 
-		if file.HasPassword {
+		if file.WithHasPassword().HasPassword {
 			err := checkPasswordFromAuthorizationHeader(file.Password, w, r)
 			if err != nil {
 				return
@@ -262,12 +262,13 @@ func checkPasswordFromAuthorizationHeader(filePassword string, w http.ResponseWr
 		err := bcrypt.CompareHashAndPassword([]byte(filePassword), password)
 
 		if err != nil {
-			respondError(w, http.StatusForbidden, "PasswordIncorrect")
+			respondError(w, http.StatusForbidden, "password incorrect")
 			return err
 		}
 	} else {
-		respondError(w, http.StatusBadRequest, "AuthorizationHeaderNotProvided")
-		return errors.New("AuthorizationHeaderNotProvided")
+		err := errors.New("authorization header not provided")
+		respondError(w, http.StatusBadRequest, err.Error())
+		return err
 	}
 	return nil
 }

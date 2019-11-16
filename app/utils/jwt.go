@@ -25,7 +25,7 @@ func InitializeJWT(config *config.Config) {
 
 func CreateJWT(email string) (*TokenResponse, error) {
 	if !emailValid(email) {
-		return &TokenResponse{}, errors.New("EmailNotAcceptable")
+		return &TokenResponse{}, errors.New("email not acceptable")
 	}
 
 	expirationTime := time.Now().Add(7 * 24 * time.Hour)
@@ -72,7 +72,7 @@ func VerifyJWT(authHeader string) (int, error) {
 func getTokenFromAuthHeader(authHeader string) (string, error) {
 	splittedHeader := strings.Split(authHeader, "Bearer ")
 	if len(splittedHeader) != 2 {
-		return "", errors.New("HeaderNotValid")
+		return "", errors.New("header not valid")
 	}
 	return splittedHeader[1], nil
 }
