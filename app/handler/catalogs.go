@@ -22,13 +22,15 @@ func CreateCatalog(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	var catalog model.Catalog
 
 	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&catalog); err != nil {
+	err := decoder.Decode(&catalog)
+	if err != nil {
 		respondError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 	defer r.Body.Close()
 
-	if err := db.Save(catalog.WithId()).Error; err != nil {
+	err = db.Save(catalog.WithId()).Error
+	if err != nil {
 		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -50,13 +52,15 @@ func UpdateCatalog(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 		}
 
 		decoder := json.NewDecoder(r.Body)
-		if err := decoder.Decode(&catalog); err != nil {
+		err = decoder.Decode(&catalog)
+		if err != nil {
 			respondError(w, http.StatusBadRequest, err.Error())
 			return
 		}
 		defer r.Body.Close()
 
-		if err := db.Save(catalog.WithId()).Error; err != nil {
+		err = db.Save(catalog.WithId()).Error
+		if err != nil {
 			respondError(w, http.StatusInternalServerError, err.Error())
 			return
 		}
@@ -77,7 +81,8 @@ func DeleteCatalog(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 		if catalog == nil {
 			return
 		}
-		if err := db.Delete(&catalog).Error; err != nil {
+		err = db.Delete(&catalog).Error
+		if err != nil {
 			respondError(w, http.StatusInternalServerError, err.Error())
 			return
 		}
@@ -185,10 +190,11 @@ func GetCatalogPath(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 
 func getRootCatalogsOr404(db *gorm.DB, w http.ResponseWriter, r *http.Request) []model.Catalog {
 	var catalogs []model.Catalog
-	if err := db.
+	err := db.
 		Where("is_public = 1 AND parent_id = 0").
 		Find(&catalogs, &model.Catalog{}).
-		Error; err != nil {
+		Error
+	if err != nil {
 		respondError(w, http.StatusNotFound, err.Error())
 		return nil
 	}
@@ -200,11 +206,12 @@ func getRootCatalogsOr404(db *gorm.DB, w http.ResponseWriter, r *http.Request) [
 
 func getCatalogOr404(db *gorm.DB, id uint, w http.ResponseWriter, r *http.Request) *model.Catalog {
 	var catalog model.Catalog
-	if err := db.
+	err := db.
 		First(&catalog, model.Catalog{
 			Model: model.Model{ID: id},
 		}).
-		Error; err != nil {
+		Error
+	if err != nil {
 		respondError(w, http.StatusNotFound, err.Error())
 		return nil
 	}
@@ -213,10 +220,11 @@ func getCatalogOr404(db *gorm.DB, id uint, w http.ResponseWriter, r *http.Reques
 
 func getCatalogChildCatalogsOr404(db *gorm.DB, id int, w http.ResponseWriter, r *http.Request) []model.Catalog {
 	var catalogs []model.Catalog
-	if err := db.
+	err := db.
 		Where(model.Catalog{ParentID: id}).
 		Find(&catalogs, model.Catalog{}).
-		Error; err != nil {
+		Error
+	if err != nil {
 		respondError(w, http.StatusNotFound, err.Error())
 		return nil
 	}
@@ -228,10 +236,11 @@ func getCatalogChildCatalogsOr404(db *gorm.DB, id int, w http.ResponseWriter, r 
 
 func getCatalogChildFilesOr404(db *gorm.DB, id int, w http.ResponseWriter, r *http.Request) []model.File {
 	var files []model.File
-	if err := db.
+	err := db.
 		Where(model.File{CatalogID: id}).
 		Find(&files, model.File{}).
-		Error; err != nil {
+		Error
+	if err != nil {
 		respondError(w, http.StatusNotFound, err.Error())
 		return nil
 	}

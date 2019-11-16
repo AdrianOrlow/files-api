@@ -81,7 +81,8 @@ func CreateFile(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	file.FileName = getFileNameWithTimestamp(file.FileName)
 	err = saveFile(reqFile, file.FileName, w, r)
 	if err != nil {
-		if err := db.Delete(&file).Error; err != nil {
+		err := db.Delete(&file).Error
+		if err != nil {
 			respondError(w, http.StatusInternalServerError, err.Error())
 			return
 		}
@@ -160,7 +161,8 @@ func DeleteFile(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		if err := db.Delete(&file).Error; err != nil {
+		err = db.Delete(&file).Error
+		if err != nil {
 			respondError(w, http.StatusInternalServerError, err.Error())
 			return
 		}
@@ -201,10 +203,10 @@ func ServeFile(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 
 func getFileOr404(db *gorm.DB, id uint, w http.ResponseWriter, r *http.Request) *model.File {
 	var file model.File
-	if err := db.
-		First(&file, model.File{Model: model.Model{ID: id},
-		}).
-		Error; err != nil {
+	err := db.
+		First(&file, model.File{Model: model.Model{ID: id}}).
+		Error
+	if err != nil {
 		respondError(w, http.StatusNotFound, err.Error())
 		return nil
 	}
