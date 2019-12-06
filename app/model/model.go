@@ -15,6 +15,6 @@ type Model struct {
 }
 
 func DBMigrate(db *gorm.DB) *gorm.DB {
-	db.AutoMigrate(&Catalog{}, &File{})
+	db.AutoMigrate(&Folder{}, &File{})
 	return db
 }

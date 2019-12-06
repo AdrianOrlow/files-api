@@ -33,7 +33,7 @@ func InitializeAuth(config *config.Config) {
 		Scopes: []string{
 			"https://www.googleapis.com/auth/userinfo.email",
 		},
-		Endpoint:     google.Endpoint,
+		Endpoint: google.Endpoint,
 	}
 }
 

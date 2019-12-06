@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	CatalogsResourceType = 0
+	FoldersResourceType = 0
 	FilesResourceType    = 1
 )
 

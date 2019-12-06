@@ -14,15 +14,15 @@ func (a *App) setRouters() {
 	a.Get(v1, "/oauth/google/login", a.handleRequest(handler.HandleGoogleLogin))
 	a.Get(v1, "/oauth/google/callback", a.handleRequest(handler.HandleGoogleCallback))
 
-	// Routing for handling the catalogs
-	a.Get(v1, "/catalogs", a.handleRequest(handler.GetRootCatalogs))
-	a.Get(v1, "/catalogs/{hashId}", a.handleRequest(handler.GetCatalog))
-	a.Get(v1, "/catalogs/{hashId}/path", a.handleRequest(handler.GetCatalogPath))
-	a.Get(v1, "/catalogs/{hashId}/files", a.handleRequest(handler.GetCatalogFiles))
-	a.Get(v1, "/catalogs/{hashId}/catalogs", a.handleRequest(handler.GetCatalogCatalogs))
-	a.Post(v1, "/catalogs", a.adminOnly(handler.CreateCatalog))
-	a.Put(v1, "/catalogs/{hashId}", a.adminOnly(handler.UpdateCatalog))
-	a.Delete(v1, "/catalogs/{hashId}", a.adminOnly(handler.DeleteCatalog))
+	// Routing for handling the folders
+	a.Get(v1, "/folders", a.handleRequest(handler.GetRootFolders))
+	a.Get(v1, "/folders/{hashId}", a.handleRequest(handler.GetFolder))
+	a.Get(v1, "/folders/{hashId}/path", a.handleRequest(handler.GetFolderPath))
+	a.Get(v1, "/folders/{hashId}/files", a.handleRequest(handler.GetFolderFiles))
+	a.Get(v1, "/folders/{hashId}/folders", a.handleRequest(handler.GetFolderFolders))
+	a.Post(v1, "/folders", a.adminOnly(handler.CreateFolder))
+	a.Put(v1, "/folders/{hashId}", a.adminOnly(handler.UpdateFolder))
+	a.Delete(v1, "/folders/{hashId}", a.adminOnly(handler.DeleteFolder))
 
 	// Routing for handling the files
 	a.Get(v1, "/files/{hashId}", a.handleRequest(handler.GetFile))

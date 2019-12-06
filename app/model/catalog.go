@@ -2,7 +2,7 @@ package model
 
 import "github.com/AdrianOrlow/files-api/app/utils"
 
-type Catalog struct {
+type Folder struct {
 	Model
 	Title        string `json:"title"`
 	Permalink    string `json:"permalink"`
@@ -11,26 +11,26 @@ type Catalog struct {
 	ParentHashID string `sql:"-" json:"parent_id"`
 }
 
-type CatalogPathElement struct {
+type FolderPathElement struct {
 	Index    int    `json:"index"`
 	HashId   string `sql:"-" json:"id"`
 	Title    string `json:"title"`
 	IsPublic bool   `json:"is_public"`
 }
 
-func (c *Catalog) WithHashId() *Catalog {
-	c.HashId = utils.EncodeId(int(c.ID), utils.CatalogsResourceType)
-	c.ParentHashID = utils.EncodeId(c.ParentID, utils.CatalogsResourceType)
-	return c
+func (f *Folder) WithHashId() *Folder {
+	f.HashId = utils.EncodeId(int(f.ID), utils.FoldersResourceType)
+	f.ParentHashID = utils.EncodeId(f.ParentID, utils.FoldersResourceType)
+	return f
 }
 
-func (c *Catalog) WithId() *Catalog {
-	c.ParentID, _ = utils.DecodeId(c.ParentHashID, utils.CatalogsResourceType)
-	return c
+func (f *Folder) WithId() *Folder {
+	f.ParentID, _ = utils.DecodeId(f.ParentHashID, utils.FoldersResourceType)
+	return f
 }
 
-func (c *Catalog) ToPath(index int) CatalogPathElement {
-	return CatalogPathElement{
+func (c *Folder) ToPath(index int) FolderPathElement {
+	return FolderPathElement{
 		Index:    index,
 		HashId:   c.HashId,
 		Title:    c.Title,

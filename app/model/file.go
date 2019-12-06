@@ -13,8 +13,8 @@ type File struct {
 	FileSizeKB       string `json:"file_size_kb"`
 	FileChecksumMD5  string `json:"file_checksum_md5"`
 	FileChecksumSHA1 string `json:"file_checksum_sha1"`
-	CatalogID        int    `json:"-"`
-	CatalogHashID    string `json:"catalog_id" sql:"-"`
+	FolderID        int    `json:"-"`
+	FolderHashID    string `json:"folder_id" sql:"-"`
 }
 
 type FilePassword struct {
@@ -23,12 +23,12 @@ type FilePassword struct {
 
 func (f *File) WithHashId() *File {
 	f.HashId = utils.EncodeId(int(f.ID), utils.FilesResourceType)
-	f.CatalogHashID = utils.EncodeId(f.CatalogID, utils.CatalogsResourceType)
+	f.FolderHashID = utils.EncodeId(f.FolderID, utils.FoldersResourceType)
 	return f
 }
 
 func (f *File) WithId() *File {
-	f.CatalogID, _ = utils.DecodeId(f.CatalogHashID, utils.CatalogsResourceType)
+	f.FolderID, _ = utils.DecodeId(f.FolderHashID, utils.FoldersResourceType)
 	return f
 }
 
