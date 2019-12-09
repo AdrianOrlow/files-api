@@ -9,9 +9,9 @@ import (
 type Model struct {
 	ID        uint       `gorm:"primary_key" json:"-"`
 	HashId    string     `sql:"-" json:"id"`
-	CreatedAt time.Time  `json:"created_at"`
-	UpdatedAt time.Time  `json:"updated_at"`
-	DeletedAt *time.Time `sql:"index" json:"deleted_at"`
+	CreatedAt time.Time  `json:"createdAt"`
+	UpdatedAt time.Time  `json:"updatedAt"`
+	DeletedAt *time.Time `sql:"index" json:"deletedAt"`
 }
 
 func DBMigrate(db *gorm.DB) *gorm.DB {

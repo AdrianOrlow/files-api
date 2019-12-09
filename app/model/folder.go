@@ -6,16 +6,16 @@ type Folder struct {
 	Model
 	Title        string `json:"title"`
 	Permalink    string `json:"permalink"`
-	IsPublic     bool   `json:"is_public"`
+	IsPublic     bool   `json:"isPublic"`
 	ParentID     int    `json:"-"`
-	ParentHashID string `sql:"-" json:"parent_id"`
+	ParentHashID string `sql:"-" json:"parentId"`
 }
 
 type FolderPathElement struct {
 	Index    int    `json:"index"`
 	HashId   string `sql:"-" json:"id"`
 	Title    string `json:"title"`
-	IsPublic bool   `json:"is_public"`
+	IsPublic bool   `json:"isPublic"`
 }
 
 func (f *Folder) WithHashId() *Folder {
@@ -29,11 +29,11 @@ func (f *Folder) WithId() *Folder {
 	return f
 }
 
-func (c *Folder) ToPath(index int) FolderPathElement {
+func (f *Folder) ToPath(index int) FolderPathElement {
 	return FolderPathElement{
 		Index:    index,
-		HashId:   c.HashId,
-		Title:    c.Title,
-		IsPublic: c.IsPublic,
+		HashId:   f.HashId,
+		Title:    f.Title,
+		IsPublic: f.IsPublic,
 	}
 }

@@ -7,14 +7,14 @@ type File struct {
 	Title            string `json:"title"`
 	Description      string `json:"description"`
 	Password         string `json:"-"`
-	HasPassword      bool   `json:"has_password" sql:"-"`
+	HasPassword      bool   `json:"hasPassword" sql:"-"`
 	Permalink        string `json:"permalink"`
-	FileName         string `json:"filename"`
-	FileSizeKB       string `json:"file_size_kb"`
-	FileChecksumMD5  string `json:"file_checksum_md5"`
-	FileChecksumSHA1 string `json:"file_checksum_sha1"`
-	FolderID        int    `json:"-"`
-	FolderHashID    string `json:"folder_id" sql:"-"`
+	FileName         string `json:"fileName"`
+	FileSizeKB       string `json:"fileSizeKB"`
+	FileChecksumMD5  string `json:"fileChecksumMd5"`
+	FileChecksumSHA1 string `json:"fileChecksumSha1"`
+	FolderID         int    `json:"-"`
+	FolderHashID     string `json:"folderId" sql:"-"`
 }
 
 type FilePassword struct {
