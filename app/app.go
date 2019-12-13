@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/AdrianOrlow/files-api/app/model"
 	"github.com/AdrianOrlow/files-api/app/utils"
+	"github.com/gorilla/handlers"
 	"log"
 	"net/http"
 
@@ -51,7 +52,7 @@ type RequestHandlerFunction func(db *gorm.DB, w http.ResponseWriter, r *http.Req
 // Run the app on it's router
 func (a *App) Run(host string) {
 	log.Print("Listening on " + host)
-	log.Fatal(http.ListenAndServe(host, a.Router))
+	log.Fatal(http.ListenAndServe(host, handlers.CORS()(a.Router)))
 }
 
 func (a *App) handleRequest(h RequestHandlerFunction) http.HandlerFunc {
