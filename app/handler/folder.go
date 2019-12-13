@@ -177,14 +177,6 @@ func GetFolderPath(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// last parent is always root (titled as 'Files')
-	path = append(path, model.FolderPathElement{
-		Index:    index + 1,
-		HashId:   zeroId,
-		Title:    "Files",
-		IsPublic: true,
-	})
-
 	respondJSON(w, http.StatusOK, path)
 }
 
