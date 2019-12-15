@@ -15,7 +15,7 @@ func (a *App) setRouters() {
 	a.Get(v1, "/oauth/google/callback", a.handleRequest(handler.HandleGoogleCallback))
 
 	// Routing for handling the folders
-	a.Get(v1, "/folders", a.handleRequest(handler.GetRootFolders))
+	a.Get(v1, "/folders/public", a.handleRequest(handler.GetRootPublicFolder))
 	a.Get(v1, "/folders/{hashId}", a.handleRequest(handler.GetFolder))
 	a.Get(v1, "/folders/{hashId}/path", a.handleRequest(handler.GetFolderPath))
 	a.Get(v1, "/folders/{hashId}/files", a.handleRequest(handler.GetFolderFiles))

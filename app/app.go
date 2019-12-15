@@ -1,8 +1,6 @@
 package app
 
 import (
-	"fmt"
-	"github.com/AdrianOrlow/files-api/app/model"
 	"github.com/AdrianOrlow/files-api/app/utils"
 	"github.com/gorilla/handlers"
 	"log"
@@ -22,19 +20,10 @@ type App struct {
 
 // Initialize initializes the app with predefined configuration
 func (a *App) Initialize(config *config.Config) {
-	dbURI := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=%s&parseTime=True",
-		config.DB.Username,
-		config.DB.Password,
-		config.DB.Host,
-		config.DB.Port,
-		config.DB.Name,
-		config.DB.Charset)
-
-	db, err := gorm.Open(config.DB.Dialect, dbURI)
+	err := a.InitializeDatabase(config)
 	if err != nil {
-		log.Fatal("Could not connect to database")
+		log.Fatal(err)
 	}
-	a.DB = model.DBMigrate(db)
 
 	err = utils.Initialize(config)
 	if err != nil {
