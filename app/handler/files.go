@@ -53,7 +53,6 @@ func CreateFile(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 		respondError(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	defer multipartFile.Close()
 
 	err = json.Unmarshal([]byte(r.FormValue("data")), &file)
 	if err != nil {
@@ -84,7 +83,6 @@ func CreateFile(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-	defer savedFile.Close()
 
 	file.FileChecksumSHA1, err = utils.GetFileSHA1Hash(savedFile)
 	if err != nil {
@@ -92,7 +90,12 @@ func CreateFile(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	savedFile, _ = utils.ReadFile(file.FileName)
+	savedFile, err = utils.ReadFile(file.FileName)
+	if err != nil {
+		respondError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
 	file.FileChecksumMD5, err = utils.GetFileMD5Hash(savedFile)
 	if err != nil {
 		respondError(w, http.StatusInternalServerError, err.Error())
@@ -121,13 +124,16 @@ func CreateFile(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 		file.Password = string(hashPassword)
 	}
 
-	err = db.Save(&file).Error
+	err = db.Save(file.WithId()).Error
 	if err != nil {
 		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	respondJSON(w, http.StatusCreated, file.WithHasPassword().WithHashId())
+
+	savedFile.Close()
+	multipartFile.Close()
 }
 
 func DeleteFile(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
