@@ -27,14 +27,6 @@ func GetFile(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		if file.WithHasPassword().HasPassword {
-			err := utils.CompareHashAndPasswordFromAuthHeader([]byte(file.Password), r)
-			if err != nil {
-				respondError(w, http.StatusForbidden, err.Error())
-				return
-			}
-		}
-
 		respondJSON(w, http.StatusOK, file.WithHashId().WithHasPassword())
 	}
 }
