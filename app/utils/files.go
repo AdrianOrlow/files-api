@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -57,6 +58,13 @@ func GetFileNameWithTimestamp(fileName string) string {
 	name := strings.TrimRight(fileName, extension)
 	timestamp := strconv.FormatInt(time.Now().UTC().Unix(), 10)
 	return name + "-" + timestamp + extension
+}
+
+func GetFileNameWithoutTimestamp(fileName string) string {
+	re := regexp.MustCompile("(.+)(-[0-9]+)(.[a-z]+)")
+
+	split := re.FindAllStringSubmatch(fileName, -1)
+	return split[0][1] + split[0][3]
 }
 
 func GetFileMD5Hash(file io.Reader) (string, error) {

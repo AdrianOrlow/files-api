@@ -8,7 +8,7 @@ import (
 func (a *App) adminOnly(h RequestHandlerFunction) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		authToken := r.Header.Get("Authorization")
-		status, err := utils.VerifyJWT(authToken)
+		status, err := utils.VerifyLoginJWT(authToken)
 		if err != nil {
 			w.WriteHeader(status)
 		}

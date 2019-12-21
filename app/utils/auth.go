@@ -8,32 +8,36 @@ import (
 	"strings"
 )
 
+const (
+	HeaderBearerType  = "Bearer"
+	HeaderBasicType   = "Basic"
+)
+
 func CompareHashAndPasswordFromAuthHeader(passwordHash []byte, r *http.Request) error {
-	password := getPasswordFromAuthorizationHeader(r)
-	if password != nil {
-		err := bcrypt.CompareHashAndPassword(passwordHash, password)
-		if err != nil {
-			return err
-		}
-	} else {
-		err := errors.New("authorization header not provided")
+	authToken := r.Header.Get("Authorization")
+
+	encodedPassword, err := GetTokenFromAuthHeader(authToken, HeaderBasicType)
+	if err != nil {
 		return err
 	}
+
+	password, err := base64.StdEncoding.DecodeString(encodedPassword)
+	if err != nil {
+		return err
+	}
+
+	err = bcrypt.CompareHashAndPassword(passwordHash, password)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
-func getPasswordFromAuthorizationHeader(r *http.Request) []byte {
-	reqToken := r.Header.Get("Authorization")
-	if reqToken == "" {
-		return nil
+func GetTokenFromAuthHeader(authHeader string, headerType string) (string, error) {
+	splittedHeader := strings.Split(authHeader, headerType + " ")
+	if len(splittedHeader) != 2 {
+		return "", errors.New("header not valid")
 	}
-
-	splitToken := strings.Split(reqToken, "Basic ")
-	if len(splitToken) != 2 {
-		return nil
-	}
-
-	reqToken = splitToken[1]
-	password, _ := base64.StdEncoding.DecodeString(reqToken)
-	return password
+	return splittedHeader[1], nil
 }

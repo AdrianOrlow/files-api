@@ -27,7 +27,11 @@ func GetFile(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		respondJSON(w, http.StatusOK, file.WithHashId().WithHasPassword())
+		respondJSON(
+			w,
+			http.StatusOK,
+			file.WithHashId().WithHasPassword().WithFileNameWithoutTimestamp(),
+		)
 	}
 }
 
@@ -122,10 +126,13 @@ func CreateFile(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respondJSON(w, http.StatusCreated, file.WithHasPassword().WithHashId())
-
 	savedFile.Close()
 	multipartFile.Close()
+	respondJSON(
+		w,
+		http.StatusCreated,
+		file.WithHasPassword().WithHashId().WithFileNameWithoutTimestamp(),
+	)
 }
 
 func DeleteFile(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
@@ -172,9 +179,24 @@ func ServeFile(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 		}
 
 		if file.WithHasPassword().HasPassword {
-			err := utils.CompareHashAndPasswordFromAuthHeader([]byte(file.Password), r)
-			if err != nil {
-				respondError(w, http.StatusBadRequest, err.Error())
+			key, ok := vars["key"]
+			if !ok {
+				respondError(w, http.StatusUnauthorized, "key not provided")
+				return
+			}
+
+			link := getFileLinkOr401(db, key, w, r)
+			if link == nil {
+				return
+			}
+
+			if file.ID != uint(link.FileID) {
+				respondError(w, http.StatusNotFound, "wrong file id")
+				return
+			}
+
+			if !link.IsValid() {
+				respondError(w, http.StatusNotFound, "link expired")
 				return
 			}
 		}
@@ -185,7 +207,48 @@ func ServeFile(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		file = file.WithFileNameWithoutTimestamp()
+		w.Header().Set("Content-Disposition", "attachment; filename=" + file.FileName)
 		http.ServeContent(w, r, file.FileName, time.Now(), bytes.NewReader(data))
+	}
+}
+
+func CreateFileDownloadLink(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	hashId := vars["hashId"]
+	id, err := utils.DecodeId(hashId, utils.FilesResourceType)
+
+	if err != nil {
+		respondError(w, http.StatusNotFound, err.Error())
+	} else {
+		file := getFileOr404(db, uint(id), w, r)
+		if file == nil {
+			return
+		}
+
+		if file.WithHasPassword().HasPassword {
+			err := utils.CompareHashAndPasswordFromAuthHeader([]byte(file.Password), r)
+			if err != nil {
+				respondError(w, http.StatusBadRequest, err.Error())
+				return
+			}
+		}
+
+		key := utils.GenerateRandomString(25)
+		link := model.Link{
+			Key: key,
+			FileID: int(file.ID),
+			ValidUntil: time.Now().Add(time.Hour * time.Duration(100)),
+		}
+
+		err = db.Save(&link).Error
+		if err != nil {
+			respondError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		respondJSON(w, http.StatusOK, link.WithHashId())
 	}
 }
 
@@ -199,4 +262,16 @@ func getFileOr404(db *gorm.DB, id uint, w http.ResponseWriter, r *http.Request) 
 		return nil
 	}
 	return file.WithHashId()
+}
+
+func getFileLinkOr401(db *gorm.DB, key string, w http.ResponseWriter, r *http.Request) *model.Link {
+	var link model.Link
+	err := db.
+		First(&link, model.Link{Key: key}).
+		Error
+	if err != nil {
+		respondError(w, http.StatusUnauthorized, "valid key not provided")
+		return nil
+	}
+	return link.WithHashId()
 }

@@ -26,7 +26,9 @@ func (a *App) setRouters() {
 
 	// Routing for handling the files
 	a.Get(v1, "/files/{hashId}", a.handleRequest(handler.GetFile))
-	a.Get(v1, "/files/{hashId}/download", a.handleRequest(handler.ServeFile))
+	a.Post(v1, "/files/{hashId}/link", a.handleRequest(handler.CreateFileDownloadLink))
+	a.Get(v1, "/files/{hashId}/download/{fileName}", a.handleRequest(handler.ServeFile))
+	a.Get(v1, "/files/{hashId}/download/{key}/{fileName}", a.handleRequest(handler.ServeFile))
 	a.Post(v1, "/files", a.adminOnly(handler.CreateFile))
 	a.Delete(v1, "/files/{hashId}", a.adminOnly(handler.DeleteFile))
 }

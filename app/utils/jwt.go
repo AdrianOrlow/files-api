@@ -5,7 +5,6 @@ import (
 	"github.com/AdrianOrlow/files-api/config"
 	"github.com/dgrijalva/jwt-go"
 	"net/http"
-	"strings"
 	"time"
 )
 
@@ -23,8 +22,8 @@ func InitializeJWT(config *config.Config) {
 	utils.jwt.adminsEmails = config.AdminsGMailAddresses
 }
 
-func CreateJWT(email string) (*TokenResponse, error) {
-	if !emailValid(email) {
+func CreateLoginJWT(email string) (*TokenResponse, error) {
+	if !loginEmailValid(email) {
 		return &TokenResponse{}, errors.New("email not acceptable")
 	}
 
@@ -38,13 +37,13 @@ func CreateJWT(email string) (*TokenResponse, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString(utils.jwt.secretKey)
 
-	tokenResponse := &TokenResponse{Token: "Bearer " + tokenString}
+	tokenResponse := &TokenResponse{Token: HeaderBearerType + " " + tokenString}
 
 	return tokenResponse, err
 }
 
-func VerifyJWT(authHeader string) (int, error) {
-	token, err := getTokenFromAuthHeader(authHeader)
+func VerifyLoginJWT(authHeader string) (int, error) {
+	token, err := GetTokenFromAuthHeader(authHeader, HeaderBearerType)
 	if err == jwt.ErrSignatureInvalid {
 		return http.StatusBadRequest, err
 	}
@@ -61,7 +60,7 @@ func VerifyJWT(authHeader string) (int, error) {
 	}
 
 	if claims, ok := tkn.Claims.(jwt.MapClaims); ok && tkn.Valid {
-		if emailValid(claims["email"]) {
+		if loginEmailValid(claims["email"]) {
 			return http.StatusOK, nil
 		}
 	}
@@ -69,15 +68,7 @@ func VerifyJWT(authHeader string) (int, error) {
 	return http.StatusUnauthorized, err
 }
 
-func getTokenFromAuthHeader(authHeader string) (string, error) {
-	splittedHeader := strings.Split(authHeader, "Bearer ")
-	if len(splittedHeader) != 2 {
-		return "", errors.New("header not valid")
-	}
-	return splittedHeader[1], nil
-}
-
-func emailValid(email interface{}) bool {
+func loginEmailValid(email interface{}) bool {
 	for _, a := range utils.jwt.adminsEmails {
 		if a == email {
 			return true

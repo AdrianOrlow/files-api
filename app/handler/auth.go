@@ -61,13 +61,35 @@ func HandleGoogleCallback(_ *gorm.DB, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := utils.CreateJWT(user.Email)
+	token, err := utils.CreateLoginJWT(user.Email)
 	if err != nil {
 		respondError(w, http.StatusUnauthorized, err.Error())
 		return
 	}
 
-	respondJSON(w, http.StatusOK, token)
+	script := `
+        <script>
+        const receiveMessage = (event) => {
+          const trustedOrigins = ["http://localhost:3000", "https://files.orlow.me"];
+          if (!trustedOrigins.includes(event.origin)) {
+            return;
+          }
+
+          event.source.postMessage(
+            {
+              token: "` + token.Token  + `",
+              source: "api"
+            },
+            event.origin
+          );
+        }
+		
+        window.addEventListener("message", receiveMessage);
+        </script>
+	`
+
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write([]byte(script))
 }
 
 func generateStateOauthCookie(w http.ResponseWriter) (string, error) {

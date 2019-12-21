@@ -212,7 +212,7 @@ func getFolderChildFilesOr404(db *gorm.DB, id int, w http.ResponseWriter, r *htt
 		return nil
 	}
 	for i, _ := range files {
-		files[i].WithHashId().WithHasPassword()
+		files[i].WithHashId().WithHasPassword().WithFileNameWithoutTimestamp()
 	}
 	return files
 }

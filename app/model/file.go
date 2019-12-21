@@ -38,3 +38,8 @@ func (f *File) WithHasPassword() *File {
 	}
 	return f
 }
+
+func (f *File) WithFileNameWithoutTimestamp() *File {
+	f.FileName = utils.GetFileNameWithoutTimestamp(f.FileName)
+	return f
+}
