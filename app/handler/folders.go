@@ -72,10 +72,11 @@ func GetFolderPath(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	var path []model.FolderPathElement
 
 	vars := mux.Vars(r)
+	zeroId := utils.EncodeId(0, utils.FoldersResourceType)
 	hashId := vars["hashId"]
 	index := 0
 
-	for len(path) == 0 {
+	for len(path) == 0 || hashId != zeroId {
 		id, err := utils.DecodeId(hashId, utils.FoldersResourceType)
 
 		if err != nil {

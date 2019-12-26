@@ -28,6 +28,11 @@ func (f *File) WithHashId() *File {
 }
 
 func (f *File) WithId() *File {
+	if f.FolderHashID == "public" {
+		f.FolderID = 1
+		return f
+	}
+
 	f.FolderID, _ = utils.DecodeId(f.FolderHashID, utils.FoldersResourceType)
 	return f
 }

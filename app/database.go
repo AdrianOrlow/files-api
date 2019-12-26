@@ -38,7 +38,6 @@ func createPublicFolder(db *gorm.DB) *gorm.DB {
 		},
 		Title:     "Public",
 		Permalink: "public",
-		IsPublic:  true,
 		ParentID:  0,
 	}
 
