@@ -18,7 +18,7 @@ import (
 )
 
 func InitializeFiles(config *config.Config) error {
-	utils.files.dir = config.FilesDir
+	utils.files.dir = config.StorageDir
 	err := createFilesDirIfNotExists()
 
 	return err

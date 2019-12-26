@@ -9,9 +9,9 @@ My personal file sharing service API. Made with Go, GORM, Gorilla Mux and MySQL.
 
 ## Getting started
 
-Firstly, rename `config.sample.json` to `config.json` and fill all the fields with your data.
-It should me mentioned that `admins_gmail_addresses` is array of Google accounts email addresses which
-can login to the system and perform CUD operations.
+Firstly, rename `.env.sample` to `.env` and fill all the fields with your data.
+It should me mentioned that `ADMIN_GMAIL_ADDRESSES` is array of Google accounts email addresses which
+can login to the system and perform CUD operations, separated with a comma.
 
 Once you filled the config you can run the server via
 

@@ -5,6 +5,8 @@ import (
 	"github.com/AdrianOrlow/files-api/app/model"
 	"github.com/AdrianOrlow/files-api/config"
 	"github.com/jinzhu/gorm"
+	"os"
+	"strings"
 	"time"
 )
 
@@ -17,10 +19,17 @@ func (a *App) InitializeDatabase(config *config.Config) error {
 		config.DB.Name,
 		config.DB.Charset)
 
+	dbUrl, dbUrlExists := os.LookupEnv("DATABASE_URL")
+	if dbUrlExists {
+		dbUrlSplit := strings.Split(dbUrl, "mysql://")
+		dbURI = dbUrlSplit[1] + "?charset=utf8mb4&parseTime=True"
+	}
+
 	db, err := gorm.Open(config.DB.Dialect, dbURI)
 	if err != nil {
 		return err
 	}
+
 	a.DB = model.DBMigrate(db)
 	a.DB = createPublicFolder(a.DB)
 

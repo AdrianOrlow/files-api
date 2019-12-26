@@ -12,7 +12,9 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"io/ioutil"
+	"log"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -26,8 +28,13 @@ type GoogleUserEmailData struct {
 }
 
 func InitializeAuth(config *config.Config) {
+	domain, exists := os.LookupEnv("GOOGLE_OAUTH_REDIRECT_DOMAIN")
+	if !exists {
+		log.Fatal("ENV VARIABLE DOESN'T EXISTS: GOOGLE_OAUTH_REDIRECT_DOMAIN")
+	}
+
 	googleOauthConfig = &oauth2.Config{
-		RedirectURL:  "http://localhost:8000/v1/oauth/google/callback",
+		RedirectURL:  domain + "v1/oauth/google/callback",
 		ClientID:     config.GoogleOauthConfig.ClientID,
 		ClientSecret: config.GoogleOauthConfig.ClientSecret,
 		Scopes: []string{
