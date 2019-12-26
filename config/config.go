@@ -14,6 +14,7 @@ type Config struct {
 	AdminsGMailAddresses []string
 	StorageDir           string
 	SecretJWT            string
+	Port                 string
 }
 
 type DBConfig struct {
@@ -58,6 +59,7 @@ func LoadConfig() *Config {
 		AdminsGMailAddresses: getEnvAsSlice("ADMIN_GMAIL_ADDRESSES", ","),
 		StorageDir: getEnv("STORAGE_DIR"),
 		SecretJWT: getEnv("SECRET_JWT"),
+		Port: getEnv("PORT"),
 	}
 }
 

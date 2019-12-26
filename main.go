@@ -18,5 +18,5 @@ func main() {
 
 	app := &app.App{}
 	app.Initialize(config)
-	app.Run(":8000")
+	app.Run(":" + config.Port)
 }

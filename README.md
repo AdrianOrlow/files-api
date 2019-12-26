@@ -27,7 +27,23 @@ go build
 
 ## Deployment (Dokku)
 
-`// TODO`
+Create the app container
+
+```
+dokku apps:create app_name
+```
+
+Create the app container
+
+```
+dokku apps:create app_name
+```
+
+Add all the env variables
+
+```
+dokku config:set HASH_ID_SALT= ...
+```
 
 ## License
 
