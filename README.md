@@ -33,16 +33,28 @@ Create the app container
 dokku apps:create app_name
 ```
 
-Create the app container
+create the mysql database container
 
 ```
-dokku apps:create app_name
+dokku mysql:create app_name-db
 ```
 
-Add all the env variables
+set all the env variables
+   
+```
+dokku config:set PORT=5000 HASH_ID_SALT= ...
+```
+
+add Dokku remote repository
 
 ```
-dokku config:set HASH_ID_SALT= ...
+git remote add dokku dokku@server_ip:app_name
+```
+
+and deploy it
+
+```
+git push dokku master
 ```
 
 ## License

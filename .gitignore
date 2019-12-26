@@ -2,3 +2,4 @@
 /.env.prod
 .idea/
 files/
+storage/

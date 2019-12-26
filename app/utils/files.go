@@ -61,7 +61,7 @@ func GetFileNameWithTimestamp(fileName string) string {
 }
 
 func GetFileNameWithoutTimestamp(fileName string) string {
-	re := regexp.MustCompile("(.+)(-[0-9]+)(.[a-z]+)")
+	re := regexp.MustCompile("(.+)(-[0-9]+)(.[a-z0-9]+)")
 
 	split := re.FindAllStringSubmatch(fileName, -1)
 	return split[0][1] + split[0][3]
