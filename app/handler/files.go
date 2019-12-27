@@ -38,7 +38,7 @@ func GetFile(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 func CreateFile(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	var file model.File
 
-	err := r.ParseMultipartForm(128 << 20) // 128 Mb
+	err := r.ParseMultipartForm(128 * 8 << 20) // 128 MB
 	if err != nil {
 		respondError(w, http.StatusBadRequest, err.Error())
 		return
