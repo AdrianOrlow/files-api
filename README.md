@@ -39,10 +39,22 @@ create the mysql database container
 dokku mysql:create app_name-db
 ```
 
-set all the env variables
+link database to the container
+
+```
+dokku mysql:link app_name-db app_name
+```
+
+set all the environment variables
    
 ```
 dokku config:set PORT=5000 HASH_ID_SALT= ...
+```
+
+create storage symlink
+
+```
+dokku storage:mount app_name /var/lib/dokku/data/storage/app_name:/storage
 ```
 
 add Dokku remote repository
@@ -51,7 +63,7 @@ add Dokku remote repository
 git remote add dokku dokku@server_ip:app_name
 ```
 
-and deploy it
+and finally push code to the repo
 
 ```
 git push dokku master
