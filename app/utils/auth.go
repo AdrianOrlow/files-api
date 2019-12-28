@@ -21,6 +21,15 @@ func CompareHashAndPasswordFromAuthHeader(passwordHash []byte, r *http.Request) 
 		return err
 	}
 
+	err = ComparePasswordAndHash(passwordHash, encodedPassword)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func ComparePasswordAndHash(passwordHash []byte, encodedPassword string) error {
 	password, err := base64.StdEncoding.DecodeString(encodedPassword)
 	if err != nil {
 		return err
@@ -35,9 +44,9 @@ func CompareHashAndPasswordFromAuthHeader(passwordHash []byte, r *http.Request) 
 }
 
 func GetTokenFromAuthHeader(authHeader string, headerType string) (string, error) {
-	splittedHeader := strings.Split(authHeader, headerType + " ")
-	if len(splittedHeader) != 2 {
+	splitHeader := strings.Split(authHeader, headerType + " ")
+	if len(splitHeader) != 2 {
 		return "", errors.New("header not valid")
 	}
-	return splittedHeader[1], nil
+	return splitHeader[1], nil
 }

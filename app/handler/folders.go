@@ -189,6 +189,7 @@ func getFolderOr404(db *gorm.DB, id uint, w http.ResponseWriter, r *http.Request
 func getFolderChildFoldersOr404(db *gorm.DB, id int, w http.ResponseWriter, r *http.Request) []model.Folder {
 	var folders []model.Folder
 	err := db.
+		Order("title").
 		Where(model.Folder{ParentID: id}).
 		Find(&folders, model.Folder{}).
 		Error
@@ -205,6 +206,7 @@ func getFolderChildFoldersOr404(db *gorm.DB, id int, w http.ResponseWriter, r *h
 func getFolderChildFilesOr404(db *gorm.DB, id int, w http.ResponseWriter, r *http.Request) []model.File {
 	var files []model.File
 	err := db.
+		Order("updated_at DESC").
 		Where(model.File{FolderID: id}).
 		Find(&files, model.File{}).
 		Error

@@ -1,4 +1,5 @@
-![GitHub](https://img.shields.io/github/license/AdrianOrlow/files-api)
+![License](https://img.shields.io/github/license/AdrianOrlow/files-api)
+![Go](https://img.shields.io/github/go-mod/go-version/AdrianOrlow/files-api)
 # Files API
 
 My personal file sharing service API. Made with Go, GORM, Gorilla Mux and MySQL.

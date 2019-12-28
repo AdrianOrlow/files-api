@@ -30,6 +30,7 @@ func (a *App) setRouters() {
 	a.Get(v1, "/files/{hashId}/download/{fileName}", a.handleRequest(handler.ServeFile))
 	a.Get(v1, "/files/{hashId}/download/{key}/{fileName}", a.handleRequest(handler.ServeFile))
 	a.Post(v1, "/files", a.adminOnly(handler.CreateFile))
+	a.Put(v1, "/files/{hashId}", a.adminOnly(handler.UpdateFile))
 	a.Delete(v1, "/files/{hashId}", a.adminOnly(handler.DeleteFile))
 }
 

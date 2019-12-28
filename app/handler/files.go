@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"golang.org/x/crypto/bcrypt"
+	"io/ioutil"
 	"net/http"
 	"time"
 
@@ -135,6 +136,60 @@ func CreateFile(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	)
 }
 
+func UpdateFile(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	hashId := vars["hashId"]
+	id, err := utils.DecodeId(hashId, utils.FilesResourceType)
+
+	if err != nil {
+		respondError(w, http.StatusNotFound, err.Error())
+	} else {
+		file := getFileOr404(db, uint(id), w, r)
+		if file == nil {
+			return
+		}
+
+		buf, _ := ioutil.ReadAll(r.Body)
+		rdr1 := ioutil.NopCloser(bytes.NewBuffer(buf))
+		rdr2 := ioutil.NopCloser(bytes.NewBuffer(buf))
+
+		decoder := json.NewDecoder(rdr1)
+		err = decoder.Decode(&file)
+		if err != nil {
+			respondError(w, http.StatusBadRequest, err.Error())
+			return
+		}
+		defer r.Body.Close()
+
+		decoder = json.NewDecoder(rdr2)
+		var password model.FilePassword
+		err = decoder.Decode(&password)
+		if err != nil {
+			respondError(w, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		if password.Password != "" {
+			hashPassword, err := bcrypt.GenerateFromPassword([]byte(password.Password), bcrypt.MinCost)
+			if err != nil {
+				respondError(w, http.StatusInternalServerError, err.Error())
+				return
+			}
+			file.Password = string(hashPassword)
+		} else if file.WithHasPassword().HasPassword {
+			file.Password = password.Password
+		}
+
+		err = db.Save(file.WithId()).Error
+		if err != nil {
+			respondError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+		respondJSON(w, http.StatusOK, file.WithHashId().WithHasPassword().WithFileNameWithoutTimestamp())
+	}
+}
+
 func DeleteFile(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
@@ -150,10 +205,6 @@ func DeleteFile(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 		}
 
 		err := utils.DeleteFile(file.FileName)
-		if err != nil {
-			respondError(w, http.StatusInternalServerError, err.Error())
-			return
-		}
 
 		err = db.Delete(&file).Error
 		if err != nil {
@@ -208,7 +259,12 @@ func ServeFile(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 		}
 
 		file = file.WithFileNameWithoutTimestamp()
-		w.Header().Set("Content-Disposition", "attachment; filename=" + file.FileName)
+
+		_, previewOk := r.URL.Query()["preview"]
+		if !previewOk {
+			w.Header().Set("Content-Disposition", "attachment; filename=" + file.FileName)
+		}
+
 		http.ServeContent(w, r, file.FileName, time.Now(), bytes.NewReader(data))
 	}
 }
