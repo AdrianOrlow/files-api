@@ -41,7 +41,7 @@ type RequestHandlerFunction func(db *gorm.DB, w http.ResponseWriter, r *http.Req
 // Run the app on it's router
 func (a *App) Run(host string) {
 	headersOk := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
-	originsOk := handlers.AllowedOrigins([]string{"http://localhost:3000", "https://files.orlow.me/"})
+	originsOk := handlers.AllowedOrigins([]string{"*"})
 	methodsOk := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS"})
 
 	log.Print("Listening on " + host)
