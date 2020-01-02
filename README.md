@@ -1,4 +1,5 @@
 ![License](https://img.shields.io/github/license/AdrianOrlow/files-api)
+[![CodeFactor](https://www.codefactor.io/repository/github/adrianorlow/files-api/badge)](https://www.codefactor.io/repository/github/adrianorlow/files-api)
 ![Go](https://img.shields.io/github/go-mod/go-version/AdrianOrlow/files-api)
 # Files API
 
