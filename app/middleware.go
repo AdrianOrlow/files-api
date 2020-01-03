@@ -11,6 +11,7 @@ func (a *App) adminOnly(h RequestHandlerFunction) http.HandlerFunc {
 		status, err := utils.VerifyLoginJWT(authToken)
 		if err != nil {
 			w.WriteHeader(status)
+			return
 		}
 		h(a.DB, w, r)
 	}
